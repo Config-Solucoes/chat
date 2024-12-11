@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat de Atendimento Online</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #chat-container {
+            width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+        }
+        #chat-window {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .user {
+            background-color: #e1f5fe;
+            text-align: right;
+        }
+        .operator {
+            background-color: #f1f8e9;
+            text-align: left;
+        }
+        #chat-input {
+            display: flex;
+            padding: 10px;
+        }
+        #chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+        #chat-input button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        #chat-input button:hover {
+            background-color: #0056b3;
+        }
+        #extra-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+        }
+        #extra-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #dc3545;
+            color: white;
+            cursor: pointer;
+        }
+        #extra-buttons button:hover {
+            background-color: #a71d2a;
+        }
+        #login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #login-container input {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #login-container button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        #login-container button:hover {
+            background-color: #0056b3;
+        }
+        #queue-message {
+            display: none;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="login-container">
+        <h2>Bem-vindo ao Chat de Atendimento</h2>
+        <input type="text" id="name" placeholder="Seu nome" required>
+        <input type="email" id="email" placeholder="Seu e-mail" required>
+        <button onclick="joinChat()">Entrar no Chat</button>
+    </div>
+
+    <div id="queue-message">
+        <p>Você está na fila de espera. Por favor, aguarde...</p>
+    </div>
+
+    <div id="chat-container">
+        <div id="chat-window"></div>
+        <div id="chat-input">
+            <input type="text" id="message" placeholder="Digite sua mensagem...">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+        <div id="extra-buttons">
+            <button onclick="sendAttachment()">Enviar Anexo</button>
+            <button onclick="exitChat()">Sair do Chat</button>
+        </div>
+    </div>
+
+    <audio id="notification-sound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
+    <script>
+        let userInChat = false;
+
+        function joinChat() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            if (!name || !email) {
+                alert('Por favor, preencha seu nome e e-mail.');
+                return;
+            }
+
+            if (userInChat) {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('queue-message').style.display = 'block';
+                return;
+            }
+
+            userInChat = true;
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('chat-container').style.display = 'flex';
+            addMessage(`Bem-vindo, ${name}! Um operador responderá em breve.`, 'operator');
+        }
+
+        const chatWindow = document.getElementById('chat-window');
+        const notificationSound = document.getElementById('notification-sound');
+
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = content;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            if (sender === 'operator') {
+                playNotificationSound();
+            }
+        }
+
+        function playNotificationSound() {
+            notificationSound.currentTime = 0;
+            notificationSound.play();
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value.trim();
+
+            if (message) {
+                addMessage(message, 'user');
+                messageInput.value = '';
+
+                // Simula resposta do operador
+                setTimeout(() => {
+                    addMessage('Obrigado pela sua mensagem! Estou aqui para ajudar.', 'operator');
+                }, 1000);
+            }
+        }
+
+        function sendAttachment() {
+            alert('Funcionalidade de envio de anexos ainda não implementada.');
+        }
+
+        function exitChat() {
+            if (confirm('Tem certeza que deseja sair do chat?')) {
+                document.getElementById('chat-container').style.display = 'none';
+                document.getElementById('login-container').style.display = 'flex';
+                userInChat = false;
+                document.getElementById('chat-window').innerHTML = '';
+            }
+        }
+
+        document.getElementById('message').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
